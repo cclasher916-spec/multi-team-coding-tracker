@@ -4,10 +4,9 @@ import {
   query, 
   orderBy, 
   Firestore,
-  DocumentData,
-  QuerySnapshot
+  DocumentData
 } from 'firebase/firestore';
-import { DailyTotal, Hierarchy, Department, Section, Team } from '../types';
+import { DailyTotal, Hierarchy } from '../types';
 
 export class FirebaseService {
   private db: Firestore;

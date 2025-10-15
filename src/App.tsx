@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { FirebaseProvider } from './contexts/FirebaseContext';
 import Layout from './components/Layout/Layout';
