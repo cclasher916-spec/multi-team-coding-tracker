@@ -6,6 +6,9 @@ import TeamView from './pages/TeamView';
 import SectionView from './pages/SectionView';
 import DepartmentView from './pages/DepartmentView';
 import AllDepartments from './pages/AllDepartments';
+import Analytics from './pages/Analytics';
+import Teams from './pages/Teams';
+import Leaderboard from './pages/Leaderboard';
 import { Toaster } from './components/ui/Toaster';
 
 function App() {
@@ -20,6 +23,9 @@ function App() {
               <Route path="/section/:deptId/:sectionId" element={<SectionView />} />
               <Route path="/department/:deptId" element={<DepartmentView />} />
               <Route path="/all-departments" element={<AllDepartments />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Routes>
           </Layout>
           <Toaster />
