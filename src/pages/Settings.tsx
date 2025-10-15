@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Bell, ChevronRight, Database, Palette, Shield, Download, Upload, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
+import { Bell, ChevronRight, Database, Palette, Download, Upload, RefreshCw, Settings as SettingsIcon } from 'lucide-react';
 
 const Settings: React.FC = () => {
   const [notifications, setNotifications] = useState({
@@ -11,27 +11,15 @@ const Settings: React.FC = () => {
     achievementAlerts: false,
     systemNotifications: true
   });
-
   const [theme, setTheme] = useState('light');
   const [refreshInterval, setRefreshInterval] = useState('30');
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
   };
-
-  const handleExportData = () => {
-    alert('Data export functionality would be implemented here');
-  };
-
-  const handleImportData = () => {
-    alert('Data import functionality would be implemented here');
-  };
-
-  const handleClearCache = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    alert('Cache cleared successfully!');
-  };
+  const handleExportData = () => { alert('Data export functionality would be implemented here'); };
+  const handleImportData = () => { alert('Data import functionality would be implemented here'); };
+  const handleClearCache = () => { localStorage.clear(); sessionStorage.clear(); alert('Cache cleared successfully!'); };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -48,11 +36,8 @@ const Settings: React.FC = () => {
         <p className="text-gray-600">Configure your Multi-Team Coding Tracker preferences</p>
       </div>
 
-      {/* Notification Settings */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5" />Notification Preferences</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="flex items-center"><Bell className="mr-2 h-5 w-5" />Notification Preferences</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             {Object.entries(notifications).map(([key, value]) => (
@@ -75,11 +60,8 @@ const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Appearance Settings */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center"><Palette className="mr-2 h-5 w-5" />Appearance</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="flex items-center"><Palette className="mr-2 h-5 w-5" />Appearance</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
@@ -95,11 +77,8 @@ const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Data Management */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5" />Data Management</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5" />Data Management</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
