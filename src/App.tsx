@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import Teams from './pages/Teams';
 import Leaderboard from './pages/Leaderboard';
 import Settings from './pages/Settings';
+import IndividualDashboard from './pages/IndividualDashboard';
 import { Toaster } from './components/ui/Toaster';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
               <Route path="/teams" element={<Teams />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/individual/:memberId" element={<IndividualDashboard />} />
             </Routes>
           </Layout>
           <Toaster />
