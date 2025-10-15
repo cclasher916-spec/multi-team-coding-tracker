@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { DailyTotal } from '../types';
 import Card from './ui/Card';
-import { User, Trophy, TrendingUp, Eye } from 'lucide-react';
+import { User, Trophy, Eye, TrendingUp } from 'lucide-react';
 import Button from './ui/Button';
 
 interface MemberCardProps {
@@ -22,7 +22,9 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, rank, showTeamInfo = tr
     medium: 'bg-blue-50 border-blue-200',
     low: 'bg-yellow-50 border-yellow-200',
     minimal: 'bg-gray-50 border-gray-200'
-  };
+  } as const;
+
+  const dailyTrend = member.totalDailyIncrease >= 0 ? 'positive' : 'negative';
 
   return (
     <Card hover className={performanceColors[performanceLevel]}>
@@ -38,13 +40,19 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, rank, showTeamInfo = tr
             )}
           </div>
         </div>
-        {rank && rank <= 3 && (
-          <div className="flex items-center">
-            {rank === 1 && <Trophy className="h-6 w-6 text-yellow-500" />}
-            {rank === 2 && <Trophy className="h-6 w-6 text-gray-400" />}
-            {rank === 3 && <Trophy className="h-6 w-6 text-amber-600" />}
+        <div className="flex items-center space-x-2">
+          {rank && rank <= 3 && (
+            <div className="flex items-center">
+              {rank === 1 && <Trophy className="h-6 w-6 text-yellow-500" />}
+              {rank === 2 && <Trophy className="h-6 w-6 text-gray-400" />}
+              {rank === 3 && <Trophy className="h-6 w-6 text-amber-600" />}
+            </div>
+          )}
+          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${dailyTrend === 'positive' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <TrendingUp className={`h-3 w-3 mr-1 ${dailyTrend === 'positive' ? 'text-green-600' : 'rotate-180 text-red-600'}`} />
+            {dailyTrend === 'positive' ? '+' : ''}{member.totalDailyIncrease} today
           </div>
-        )}
+        </div>
       </div>
 
       {showTeamInfo && (
@@ -93,13 +101,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, rank, showTeamInfo = tr
         </div>
       </div>
 
-      <Button
-        as={Link}
-        to={`/individual/${member.memberId}`}
-        className="w-full"
-        size="sm"
-        variant="secondary"
-      >
+      <Button as={Link} to={`/individual/${member.memberId}`} className="w-full" size="sm" variant="secondary">
         <Eye className="mr-2 h-4 w-4" />
         View Dashboard
       </Button>
