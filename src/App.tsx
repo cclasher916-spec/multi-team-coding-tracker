@@ -9,6 +9,7 @@ import AllDepartments from './pages/AllDepartments';
 import Analytics from './pages/Analytics';
 import Teams from './pages/Teams';
 import Leaderboard from './pages/Leaderboard';
+import Settings from './pages/Settings';
 import { Toaster } from './components/ui/Toaster';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </Layout>
           <Toaster />
