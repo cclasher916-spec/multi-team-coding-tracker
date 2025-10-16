@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { TeamComparison } from '../../types';
+// Removing TeamComparison typed import; use inline type instead to fix TS2305
+
+interface TeamComparison {
+  teamId?: string;
+  teamName: string;
+  deptName: string;
+  sectionName: string;
+  members: number;
+  totalSolved: number;
+  avgPerMember: number;
+  topPerformer: string;
+  topPerformerScore: number;
+  teamLeadName?: string;
+  teamLeadScore?: number;
+}
+
 import { TrendingUp, Users, Trophy } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -21,8 +36,8 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
   };
 
   const sortedData = [...data].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
+    const aValue = a[sortField] as any;
+    const bValue = b[sortField] as any;
     
     if (typeof aValue === 'string' && typeof bValue === 'string') {
       return sortDirection === 'asc' 
@@ -38,7 +53,7 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
   });
 
   const getPerformanceColor = (value: number, max: number) => {
-    const percentage = (value / max) * 100;
+    const percentage = max > 0 ? (value / max) * 100 : 0;
     if (percentage >= 80) return 'text-green-600 bg-green-50';
     if (percentage >= 60) return 'text-blue-600 bg-blue-50';
     if (percentage >= 40) return 'text-yellow-600 bg-yellow-50';
@@ -58,7 +73,6 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
 
   return (
     <div className="space-y-4">
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-4">
           <div className="flex items-center">
@@ -94,114 +108,36 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Comparison Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('teamName')}
-              >
-                Team
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('members')}
-              >
-                👥 Members
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('totalSolved')}
-              >
-                ✅ Total
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('avgPerMember')}
-              >
-                📊 Average
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('leetcode')}
-              >
-                💻 LC
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('skillrack')}
-              >
-                📊 SR
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('codechef')}
-              >
-                🍛 CC
-              </th>
-              <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('hackerrank')}
-              >
-                ⭐ HR
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('teamName')}>Team</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('members')}>👥 Members</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('totalSolved')}>✅ Total</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort('avgPerMember')}>📊 Average</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">👑 Team Lead</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedData.map((team, index) => (
-              <tr key={team.teamId} className="hover:bg-gray-50 transition-colors">
+            {sortedData.map((team) => (
+              <tr key={team.teamName} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className={cn(
-                      'w-2 h-8 rounded-full mr-3',
-                      index === 0 ? 'bg-yellow-400' :
-                      index === 1 ? 'bg-gray-400' :
-                      index === 2 ? 'bg-amber-400' :
-                      'bg-blue-400'
-                    )} />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{team.teamName}</div>
-                      <div className="text-xs text-gray-500">Rank #{index + 1}</div>
-                    </div>
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">{team.teamName}</div>
+                  <div className="text-xs text-gray-500">{team.sectionName} • {team.deptName}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {team.members}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.members}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.totalSolved, maxTotal)}`}>
+                    {team.totalSolved.toLocaleString()}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span className={cn(
-                      'px-3 py-1 rounded-full text-sm font-medium',
-                      getPerformanceColor(team.totalSolved, maxTotal)
-                    )}>
-                      {team.totalSolved.toLocaleString()}
-                    </span>
-                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.avgPerMember, maxAvg)}`}>
+                    {team.avgPerMember}
+                  </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span className={cn(
-                      'px-3 py-1 rounded-full text-sm font-medium',
-                      getPerformanceColor(team.avgPerMember, maxAvg)
-                    )}>
-                      {team.avgPerMember}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {team.leetcode.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {team.skillrack.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {team.codechef.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {team.hackerrank.toLocaleString()}
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.teamLeadName || '—'}</td>
               </tr>
             ))}
           </tbody>

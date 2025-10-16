@@ -1,130 +1,76 @@
-import { DailyTotal, TeamStats, LeaderboardEntry } from '../types';
+import { DailyTotal } from '../types';
 
-/**
- * Process raw data frame by sorting and computing totals
- */
 export function processDataFrame(data: DailyTotal[]): DailyTotal[] {
   if (!data || data.length === 0) return [];
-  
   return data
-    .map(record => ({
-      ...record,
-      totalSolved: (record.leetcodeTotal || 0) + (record.skillrackTotal || 0) + 
-                   (record.codechefTotal || 0) + (record.hackerrankTotal || 0),
-      totalDailyIncrease: (record.leetcodeDailyIncrease || 0) + (record.skillrackDailyIncrease || 0) + 
-                          (record.codechefDailyIncrease || 0) + (record.hackerrankDailyIncrease || 0)
+    .map(r => ({
+      ...r,
+      totalSolved: (r.leetcodeTotal || 0) + (r.skillrackTotal || 0) + (r.codechefTotal || 0) + (r.hackerrankTotal || 0),
+      totalDailyIncrease: (r.leetcodeDailyIncrease || 0) + (r.skillrackDailyIncrease || 0) + (r.codechefDailyIncrease || 0) + (r.hackerrankDailyIncrease || 0)
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-/**
- * Get latest record for each member
- */
 export function getLatestByMember(data: DailyTotal[]): DailyTotal[] {
-  if (!data || data.length === 0) return [];
-  
-  const latestByMember = new Map<string, DailyTotal>();
-  
-  data.forEach(record => {
-    const existing = latestByMember.get(record.memberId);
-    if (!existing || new Date(record.date) > new Date(existing.date)) {
-      latestByMember.set(record.memberId, record);
-    }
+  const map = new Map<string, DailyTotal>();
+  data.forEach(rec => {
+    const cur = map.get(rec.memberId);
+    if (!cur || new Date(rec.date) > new Date(cur.date)) map.set(rec.memberId, rec);
   });
-  
-  return Array.from(latestByMember.values())
-    .sort((a, b) => {
-      // Sort team leads first, then by total solved
-      if (a.isTeamLead && !b.isTeamLead) return -1;
-      if (!a.isTeamLead && b.isTeamLead) return 1;
-      return b.totalSolved - a.totalSolved;
-    });
+  return Array.from(map.values()).sort((a, b) => {
+    if (a.isTeamLead && !b.isTeamLead) return -1;
+    if (!a.isTeamLead && b.isTeamLead) return 1;
+    return b.totalSolved - a.totalSolved;
+  });
 }
 
-/**
- * Calculate team statistics
- */
-export function getTeamStats(data: DailyTotal[]): TeamStats {
-  if (!data || data.length === 0) {
-    return {
-      totalMembers: 0,
-      totalProblems: 0,
-      avgPerMember: 0,
-      topPerformer: 'N/A',
-      topPerformerScore: 0,
-      teamLeadName: '',
-      teamLeadScore: 0
-    };
-  }
-  
+export function getTeamStats(data: DailyTotal[]) {
   const latest = getLatestByMember(data);
-  const teamLead = latest.find(member => member.isTeamLead);
-  
-  const totalProblems = latest.reduce((sum, member) => sum + member.totalSolved, 0);
-  const avgPerMember = Math.round(totalProblems / latest.length);
-  const topPerformer = latest[0]; // Already sorted by total solved
-  
-  return {
-    totalMembers: latest.length,
-    totalProblems,
-    avgPerMember,
-    topPerformer: topPerformer?.memberName || 'N/A',
-    topPerformerScore: topPerformer?.totalSolved || 0,
-    teamLeadName: teamLead?.memberName || '',
-    teamLeadScore: teamLead?.totalSolved || 0
-  };
+  if (latest.length === 0) return { totalMembers: 0, totalProblems: 0, avgPerMember: 0, topPerformer: 'N/A', topPerformerScore: 0, teamLeadName: '', teamLeadScore: 0 };
+  const total = latest.reduce((s, m) => s + m.totalSolved, 0);
+  const avg = Math.round(total / latest.length);
+  const top = latest[0];
+  const lead = latest.find(m => m.isTeamLead);
+  return { totalMembers: latest.length, totalProblems: total, avgPerMember: avg, topPerformer: top.memberName, topPerformerScore: top.totalSolved, teamLeadName: lead?.memberName || '', teamLeadScore: lead?.totalSolved || 0 };
 }
 
-/**
- * Create leaderboard with ranks
- */
-export function createLeaderboard(data: DailyTotal[]): LeaderboardEntry[] {
+export function createLeaderboard(data: DailyTotal[]) {
   const latest = getLatestByMember(data);
-  
-  return latest.map((member, index) => ({
-    rank: index + 1,
-    memberId: member.memberId,
-    memberName: member.memberName,
-    teamId: member.teamId,
-    sectionId: member.sectionId,
-    deptId: member.deptId,
-    totalSolved: member.totalSolved,
-    leetcodeTotal: member.leetcodeTotal,
-    skillrackTotal: member.skillrackTotal,
-    codechefTotal: member.codechefTotal,
-    hackerrankTotal: member.hackerrankTotal,
-    isTeamLead: member.isTeamLead,
-    assignedTeamLead: member.assignedTeamLead
+  return latest.map((m, i) => ({
+    rank: i + 1,
+    memberId: m.memberId,
+    memberName: m.memberName,
+    teamId: m.teamId,
+    sectionId: m.sectionId,
+    deptId: m.deptId,
+    totalSolved: m.totalSolved,
+    leetcodeTotal: m.leetcodeTotal,
+    skillrackTotal: m.skillrackTotal,
+    codechefTotal: m.codechefTotal,
+    hackerrankTotal: m.hackerrankTotal,
+    isTeamLead: m.isTeamLead,
+    assignedTeamLead: m.assignedTeamLead
   }));
 }
 
-/**
- * Create team comparison data
- */
 export function createTeamComparison(data: DailyTotal[]) {
-  if (!data || data.length === 0) return [];
-  
-  const teamGroups = new Map<string, DailyTotal[]>();
-  
-  // Group by team
-  data.forEach(record => {
-    const teamKey = `${record.deptId}-${record.sectionId}-${record.teamId}`;
-    if (!teamGroups.has(teamKey)) {
-      teamGroups.set(teamKey, []);
-    }
-    teamGroups.get(teamKey)!.push(record);
+  if (!data || data.length === 0) return [] as any[];
+  const groups = new Map<string, DailyTotal[]>();
+  data.forEach(r => {
+    const key = `${r.deptId}-${r.sectionId}-${r.teamId}`;
+    const arr = groups.get(key) || [];
+    arr.push(r);
+    groups.set(key, arr);
   });
-  
-  // Calculate stats for each team
-  const teamComparisons = [];
-  for (const [teamKey, teamData] of teamGroups) {
-    const stats = getTeamStats(teamData);
-    const sampleMember = teamData[0];
-    
-    teamComparisons.push({
-      teamName: sampleMember.teamId,
-      deptName: sampleMember.deptId,
-      sectionName: sampleMember.sectionId,
+  const out: any[] = [];
+  for (const [, arr] of groups) {
+    const stats = getTeamStats(arr);
+    const sample = arr[0];
+    out.push({
+      teamId: sample.teamId,
+      teamName: sample.teamId,
+      deptName: sample.deptId,
+      sectionName: sample.sectionId,
       members: stats.totalMembers,
       totalSolved: stats.totalProblems,
       avgPerMember: stats.avgPerMember,
@@ -134,6 +80,5 @@ export function createTeamComparison(data: DailyTotal[]) {
       teamLeadScore: stats.teamLeadScore
     });
   }
-  
-  return teamComparisons.sort((a, b) => b.totalSolved - a.totalSolved);
+  return out.sort((a, b) => b.totalSolved - a.totalSolved);
 }

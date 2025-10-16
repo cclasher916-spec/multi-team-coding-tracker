@@ -22,8 +22,8 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, showTeamColum
         1: 'bg-yellow-100 text-yellow-800',
         2: 'bg-gray-100 text-gray-800', 
         3: 'bg-amber-100 text-amber-800'
-      };
-      return colors[rank as keyof typeof colors];
+      } as const;
+      return colors[rank as 1 | 2 | 3];
     }
     return 'bg-gray-50 text-gray-700';
   };
@@ -46,14 +46,14 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ data, showTeamColum
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data.map((entry, index) => (
+          {data.map((entry) => (
             <tr key={`${entry.memberId}-${entry.rank}`} className={`hover:bg-gray-50 ${entry.rank <= 3 ? 'bg-gradient-to-r from-gray-50 to-white' : ''} ${entry.isTeamLead ? 'bg-yellow-50/30' : ''}`}>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center space-x-2">
                   <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getRankBadge(entry.rank)}`}>
                     #{entry.rank}
                   </span>
-                  {getRankIcon(entry.rank, entry.isTeamLead)}
+                  {getRankIcon(entry.rank, Boolean(entry.isTeamLead))}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
