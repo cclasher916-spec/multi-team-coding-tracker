@@ -64,6 +64,9 @@ export class FirebaseService {
               id: teamId,
               name: teamData.name || teamId,
               description: teamData.description || '',
+              baseTeamName: teamData.base_team_name || teamData.name || teamId,
+              teamLeadName: teamData.team_lead_name || '',
+              teamLeadEmail: teamData.team_lead_email || '',
               sectionId,
               deptId
             };
@@ -234,7 +237,9 @@ export class FirebaseService {
       totalDailyIncrease: (dailyData.leetcode_daily_increase || 0) + 
                          (dailyData.skillrack_daily_increase || 0) + 
                          (dailyData.codechef_daily_increase || 0) + 
-                         (dailyData.hackerrank_daily_increase || 0)
+                         (dailyData.hackerrank_daily_increase || 0),
+      assignedTeamLead: memberData.assigned_team_lead || '',
+      isTeamLead: memberData.is_team_lead || false
     };
   }
 }

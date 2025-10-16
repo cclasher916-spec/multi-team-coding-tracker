@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { DailyTotal } from '../types';
 import Card from './ui/Card';
-import { User, Trophy, Eye, TrendingUp } from 'lucide-react';
+import { User, Trophy, Eye, TrendingUp, Crown } from 'lucide-react';
 import Button from './ui/Button';
 
 interface MemberCardProps {
@@ -27,16 +27,32 @@ const MemberCard: React.FC<MemberCardProps> = ({ member, rank, showTeamInfo = tr
   const dailyTrend = member.totalDailyIncrease >= 0 ? 'positive' : 'negative';
 
   return (
-    <Card hover className={performanceColors[performanceLevel]}>
+    <Card hover className={`${performanceColors[performanceLevel]} ${member.isTeamLead ? 'ring-2 ring-yellow-300' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mr-3">
-            <User className="h-6 w-6 text-white" />
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-3 ${
+            member.isTeamLead ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : 'bg-gradient-hero'
+          }`}>
+            {member.isTeamLead ? (
+              <Crown className="h-6 w-6 text-white" />
+            ) : (
+              <User className="h-6 w-6 text-white" />
+            )}
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{member.memberName}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900">{member.memberName}</h3>
+              {member.isTeamLead && (
+                <span className="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                  👑 Team Lead
+                </span>
+              )}
+            </div>
             {rank && (
               <p className="text-sm text-gray-500">Rank #{rank}</p>
+            )}
+            {!member.isTeamLead && member.assignedTeamLead && (
+              <p className="text-xs text-blue-600 mt-1">Under: {member.assignedTeamLead}</p>
             )}
           </div>
         </div>

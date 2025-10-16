@@ -1,12 +1,3 @@
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  teamId: string;
-  sectionId: string;
-  deptId: string;
-}
-
 export interface DailyTotal {
   id: string;
   date: string;
@@ -28,6 +19,8 @@ export interface DailyTotal {
   githubDailyIncrease: number;
   totalSolved: number;
   totalDailyIncrease: number;
+  assignedTeamLead?: string; // which leader this member belongs under
+  isTeamLead?: boolean;      // true if this member IS the team leader
 }
 
 export interface Team {
@@ -36,6 +29,9 @@ export interface Team {
   description: string;
   sectionId: string;
   deptId: string;
+  baseTeamName?: string;     // original team name before leader suffix
+  teamLeadName?: string;     // name of the team leader
+  teamLeadEmail?: string;    // email of the team leader
 }
 
 export interface Section {
@@ -61,31 +57,22 @@ export interface TeamStats {
   avgPerMember: number;
   topPerformer: string;
   topPerformerScore: number;
+  teamLeadName?: string;
+  teamLeadScore?: number;
 }
-
-export type ViewLevel = 'Team View' | 'Section View' | 'Department View' | 'All Departments';
 
 export interface LeaderboardEntry {
   rank: number;
+  memberId: string;
   memberName: string;
   teamId: string;
   sectionId: string;
   deptId: string;
+  totalSolved: number;
   leetcodeTotal: number;
   skillrackTotal: number;
   codechefTotal: number;
   hackerrankTotal: number;
-  totalSolved: number;
-}
-
-export interface TeamComparison {
-  teamId: string;
-  teamName: string;
-  members: number;
-  totalSolved: number;
-  leetcode: number;
-  skillrack: number;
-  codechef: number;
-  hackerrank: number;
-  avgPerMember: number;
+  isTeamLead?: boolean;
+  assignedTeamLead?: string;
 }

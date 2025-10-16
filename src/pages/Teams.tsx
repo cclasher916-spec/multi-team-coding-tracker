@@ -7,7 +7,7 @@ import { processDataFrame, getTeamStats } from '../utils/dataProcessing';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Button from '../components/ui/Button';
-import { Users, ChevronRight, Building2, Search, Eye, Filter } from 'lucide-react';
+import { Users, ChevronRight, Building2, Search, Eye, Filter, Crown } from 'lucide-react';
 
 const Teams: React.FC = () => {
   const { db, isInitialized } = useFirebase();
@@ -18,6 +18,7 @@ const Teams: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
+  const [showOnlyLeaderTeams, setShowOnlyLeaderTeams] = useState(false);
 
   useEffect(() => {
     if (isInitialized && db) {
@@ -51,7 +52,7 @@ const Teams: React.FC = () => {
   }
 
   const allTeams: Array<{
-    id: string; name: string; deptId: string; deptName: string; sectionId: string; sectionName: string; description: string; stats: ReturnType<typeof getTeamStats>;
+    id: string; name: string; deptId: string; deptName: string; sectionId: string; sectionName: string; description: string; stats: ReturnType<typeof getTeamStats>; teamLeadName?: string; baseTeamName?: string;
   }> = [];
 
   Object.entries(hierarchy).forEach(([deptId, dept]) => {
@@ -59,7 +60,18 @@ const Teams: React.FC = () => {
       Object.entries(section.teams).forEach(([teamId, team]) => {
         const teamData = allData.filter(d => d.deptId === deptId && d.sectionId === sectionId && d.teamId === teamId);
         const stats = getTeamStats(teamData);
-        allTeams.push({ id: teamId, name: team.name, deptId, deptName: dept.name, sectionId, sectionName: section.name, description: team.description, stats });
+        allTeams.push({ 
+          id: teamId, 
+          name: team.name, 
+          deptId, 
+          deptName: dept.name, 
+          sectionId, 
+          sectionName: section.name, 
+          description: team.description, 
+          stats,
+          teamLeadName: team.teamLeadName,
+          baseTeamName: team.baseTeamName
+        });
       });
     });
   });
@@ -68,10 +80,12 @@ const Teams: React.FC = () => {
     const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       team.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       team.deptName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      team.sectionName.toLowerCase().includes(searchTerm.toLowerCase());
+      team.sectionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (team.teamLeadName && team.teamLeadName.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesDept = !selectedDept || team.deptId === selectedDept;
     const matchesSection = !selectedSection || team.sectionId === selectedSection;
-    return matchesSearch && matchesDept && matchesSection;
+    const matchesLeaderFilter = !showOnlyLeaderTeams || team.teamLeadName;
+    return matchesSearch && matchesDept && matchesSection && matchesLeaderFilter;
   });
 
   const sortedTeams = filteredTeams.sort((a, b) => b.stats.totalProblems - a.stats.totalProblems);
@@ -87,6 +101,20 @@ const Teams: React.FC = () => {
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
         <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">👥 Team Directory</h1>
         <p className="text-gray-600">Browse and manage all teams across your organization</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            {allTeams.length} Total Teams
+          </span>
+          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            {Object.keys(hierarchy).length} Departments
+          </span>
+          <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+            {Object.values(hierarchy).reduce((sum, dept) => sum + Object.keys(dept.sections).length, 0)} Sections
+          </span>
+          <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            {allTeams.filter(t => t.teamLeadName).length} Teams with Leaders
+          </span>
+        </div>
       </div>
 
       <Card>
@@ -94,12 +122,12 @@ const Teams: React.FC = () => {
           <CardTitle className="flex items-center"><Search className="mr-2 h-5 w-5" />Search & Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search Teams</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input type="text" placeholder="Search by team, department, or description..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <input type="text" placeholder="Search by team, department, leader..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
             <div>
@@ -116,6 +144,13 @@ const Teams: React.FC = () => {
                 {selectedDept && Object.entries(hierarchy[selectedDept]?.sections || {}).map(([sectionId, section]) => (<option key={sectionId} value={sectionId}>{section.name}</option>))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center"><Crown className="h-4 w-4 mr-2" />Filter</label>
+              <label className="flex items-center mt-2">
+                <input type="checkbox" checked={showOnlyLeaderTeams} onChange={(e) => setShowOnlyLeaderTeams(e.target.checked)} className="mr-2" />
+                <span className="text-sm text-gray-700">Teams with Leaders only</span>
+              </label>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -125,13 +160,23 @@ const Teams: React.FC = () => {
           const performanceLevel = team.stats.totalProblems >= 1000 ? 'high' : team.stats.totalProblems >= 500 ? 'medium' : team.stats.totalProblems >= 100 ? 'low' : 'minimal';
           const performanceColors = { high: 'bg-green-50 border-green-200', medium: 'bg-blue-50 border-blue-200', low: 'bg-yellow-50 border-yellow-200', minimal: 'bg-gray-50 border-gray-200' } as const;
           return (
-            <Card key={`${team.deptId}-${team.sectionId}-${team.id}`} hover className={performanceColors[performanceLevel]}>
+            <Card key={`${team.deptId}-${team.sectionId}-${team.id}`} hover className={`${performanceColors[performanceLevel]} ${team.teamLeadName ? 'ring-1 ring-yellow-200' : ''}`}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-hero rounded-lg flex items-center justify-center mr-3"><Users className="h-6 w-6 text-white" /></div>
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mr-3 ${
+                    team.teamLeadName ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' : 'bg-gradient-hero'
+                  }`}>
+                    {team.teamLeadName ? <Crown className="h-6 w-6 text-white" /> : <Users className="h-6 w-6 text-white" />}
+                  </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{team.baseTeamName || team.name}</h3>
                     <p className="text-sm text-gray-500">#{index + 1} by performance</p>
+                    {team.teamLeadName && (
+                      <div className="flex items-center mt-1">
+                        <Crown className="h-3 w-3 text-yellow-600 mr-1" />
+                        <span className="text-xs text-yellow-700 font-medium">Lead: {team.teamLeadName}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${performanceLevel === 'high' ? 'bg-green-200 text-green-800' : performanceLevel === 'medium' ? 'bg-blue-200 text-blue-800' : performanceLevel === 'low' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-200 text-gray-800'}`}>{performanceLevel.toUpperCase()}</span>
