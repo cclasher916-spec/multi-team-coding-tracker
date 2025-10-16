@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { FirebaseService } from '../services/firebaseService';
-import { DailyTotal, TeamStats } from '../types';
-import { processDataFrame, getTeamStats, createLeaderboard } from '../utils/dataProcessing';
+import { DailyTotal, Hierarchy } from '../types';
+import { processDataFrame, getTeamStats, getLatestByMember } from '../utils/dataProcessing';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import LeaderboardTable from '../components/Tables/LeaderboardTable';
-import MetricCards from '../components/Metrics/MetricCards';
-import { ChevronRight } from 'lucide-react';
+import MemberGrid from '../components/MemberGrid';
+import { Users, ChevronRight, Trophy, TrendingUp, Target, Crown } from 'lucide-react';
 
 const TeamView: React.FC = () => {
-  const { deptId, sectionId, teamId } = useParams<{
-    deptId: string;
-    sectionId: string;
-    teamId: string;
-  }>();
-  
+  const { deptId, sectionId, teamId } = useParams<{ deptId: string; sectionId: string; teamId: string }>();
   const { db, isInitialized } = useFirebase();
   const [data, setData] = useState<DailyTotal[]>([]);
-  const [stats, setStats] = useState<TeamStats | null>(null);
+  const [hierarchy, setHierarchy] = useState<Hierarchy>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,12 +28,13 @@ const TeamView: React.FC = () => {
     try {
       setLoading(true);
       const firebaseService = new FirebaseService(db);
-      const rawData = await firebaseService.loadTeamData(deptId, sectionId, teamId);
-      const processedData = processDataFrame(rawData);
-      const teamStats = getTeamStats(processedData);
+      const [teamData, hierarchyData] = await Promise.all([
+        firebaseService.loadTeamData(deptId, sectionId, teamId),
+        firebaseService.loadHierarchy()
+      ]);
       
-      setData(processedData);
-      setStats(teamStats);
+      setData(processDataFrame(teamData));
+      setHierarchy(hierarchyData);
     } catch (error) {
       console.error('Error loading team data:', error);
     } finally {
@@ -56,7 +51,27 @@ const TeamView: React.FC = () => {
     );
   }
 
-  const leaderboard = createLeaderboard(data);
+  if (!data.length) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <CardContent className="text-center py-12">
+            <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No team data found</h3>
+            <p className="text-gray-600">No data available for this team.</p>
+            <Link to="/teams" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">
+              Browse All Teams
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const team = hierarchy[deptId]?.sections[sectionId]?.teams[teamId];
+  const stats = getTeamStats(data);
+  const latest = getLatestByMember(data);
+  const teamLead = latest.find(member => member.isTeamLead);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -64,81 +79,131 @@ const TeamView: React.FC = () => {
       <nav className="flex items-center space-x-2 text-sm text-gray-600">
         <Link to="/" className="hover:text-gray-900">Dashboard</Link>
         <ChevronRight className="h-4 w-4" />
-        <Link to={`/department/${deptId}`} className="hover:text-gray-900">{deptId}</Link>
+        <Link to="/teams" className="hover:text-gray-900">Teams</Link>
         <ChevronRight className="h-4 w-4" />
-        <Link to={`/section/${deptId}/${sectionId}`} className="hover:text-gray-900">{sectionId}</Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="font-medium text-gray-900">{teamId}</span>
+        <span className="font-medium text-gray-900">{team?.baseTeamName || teamId}</span>
       </nav>
 
       {/* Hero Section */}
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-        <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-          👥 Team: {teamId}
-        </h1>
-        <p className="text-gray-600">
-          Performance tracking for team members in {sectionId}, {deptId}
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
+              👥 {team?.baseTeamName || team?.name || teamId}
+            </h1>
+            <p className="text-gray-600 mb-4">
+              Team Performance Dashboard
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                {hierarchy[deptId]?.name}
+              </span>
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                {hierarchy[deptId]?.sections[sectionId]?.name}
+              </span>
+              {team?.teamLeadName && (
+                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                  <Crown className="h-4 w-4 mr-1" />
+                  Team Lead: {team.teamLeadName}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-gray-900">{stats.totalProblems.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Total Problems Solved</div>
+            {teamLead && (
+              <div className="text-yellow-600 text-sm mt-1 flex items-center justify-end">
+                <Crown className="h-4 w-4 mr-1" />
+                Lead: {stats.teamLeadScore} problems
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Metrics */}
-      {stats && <MetricCards stats={stats} />}
-
-      {/* Leaderboard */}
-      <Card>
-        <CardHeader>
-          <CardTitle>🏆 Team Leaderboard</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LeaderboardTable 
-            data={leaderboard} 
-            showTeamColumn={false}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Raw Data */}
-      <Card>
-        <CardHeader>
-          <CardTitle>📊 Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LeetCode</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SkillRack</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CodeChef</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HackerRank</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {data.slice(0, 20).map((record, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{record.memberName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.leetcodeTotal}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.skillrackTotal}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.codechefTotal}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.hackerrankTotal}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{record.totalSolved}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card hover className="bg-blue-50">
+          <div className="flex items-center p-6">
+            <div className="p-3 rounded-lg bg-blue-100 mr-4">
+              <Users className="h-6 w-6 text-blue-600" />
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No data available for this team
+            <div>
+              <p className="text-sm font-medium text-gray-600">Team Members</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalMembers}</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        </Card>
+
+        <Card hover className="bg-green-50">
+          <div className="flex items-center p-6">
+            <div className="p-3 rounded-lg bg-green-100 mr-4">
+              <Target className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Solved</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalProblems.toLocaleString()}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card hover className="bg-purple-50">
+          <div className="flex items-center p-6">
+            <div className="p-3 rounded-lg bg-purple-100 mr-4">
+              <TrendingUp className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Average Score</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.avgPerMember}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card hover className="bg-yellow-50">
+          <div className="flex items-center p-6">
+            <div className="p-3 rounded-lg bg-yellow-100 mr-4">
+              <Trophy className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Top Score</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.topPerformerScore}</p>
+              <p className="text-xs text-gray-500">{stats.topPerformer}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Team Leadership Info */}
+      {teamLead && (
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-yellow-800">
+              <Crown className="mr-2 h-5 w-5" />
+              Team Leadership
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-lg font-bold text-yellow-700">{teamLead.memberName}</div>
+                <div className="text-sm text-yellow-600">Team Leader</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-yellow-700">{teamLead.totalSolved}</div>
+                <div className="text-sm text-yellow-600">Problems Solved</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-yellow-700">#{latest.findIndex(m => m.memberId === teamLead.memberId) + 1}</div>
+                <div className="text-sm text-yellow-600">Team Rank</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Team Members */}
+      <MemberGrid data={data} showTeamInfo={false} title={`${team?.baseTeamName || team?.name || teamId} Members`} />
     </div>
   );
 };
