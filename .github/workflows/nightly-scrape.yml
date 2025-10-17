@@ -1,0 +1,42 @@
+name: Nightly Scrape (11pm IST)
+
+on:
+  schedule:
+    - cron: '30 17 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests beautifulsoup4 google-generativeai firebase-admin python-dotenv; fi
+
+      - name: Write Firebase credentials file
+        env:
+          FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
+        run: |
+          echo "$FIREBASE_CREDENTIALS_JSON" > service-account.json
+          echo "FIREBASE_CREDENTIALS_JSON written to service-account.json"
+
+      - name: Run scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_FROM_EMAIL: ${{ secrets.GMAIL_FROM_EMAIL }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FIREBASE_CREDENTIALS_PATH: service-account.json
+        run: |
+          python scripts/enhanced_scraper_v2.py
