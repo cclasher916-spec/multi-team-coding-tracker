@@ -1,6 +1,6 @@
 import React from 'react';
-import { TeamStats } from '../types';
-import Card from '../components/ui/Card';
+import { TeamStats } from '../../types';
+import Card from '../ui/Card';
 
 interface MetricCardsProps {
   stats: TeamStats;

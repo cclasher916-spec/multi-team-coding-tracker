@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { FirebaseService } from '../services/firebaseService';
-import { DailyTotal, Hierarchy } from '../types';
-import { processDataFrame, getTeamStats, getLatestByMember } from '../utils/dataProcessing';
-import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { DailyTotal } from '../types';
+import { processDataFrame, getTeamStats } from '../utils/dataProcessing';
+import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MemberGrid from '../components/MemberGrid';
 import MetricCards from '../components/Metrics/MetricCards';
-import { Users, ChevronRight, GraduationCap } from 'lucide-react';
+import { ChevronRight, GraduationCap } from 'lucide-react';
 
 const TeamView: React.FC = () => {
   const { db, isInitialized } = useFirebase();
@@ -53,9 +53,7 @@ const TeamView: React.FC = () => {
   const parts = window.location.pathname.split('/');
   const teamId = parts[4] || '';
 
-  // Batch filter
   const filtered = selectedBatch ? data.filter(d => d.assignedBatch === selectedBatch) : data;
-
   const stats = getTeamStats(filtered);
 
   return (
@@ -68,25 +66,14 @@ const TeamView: React.FC = () => {
         <span className="font-medium text-gray-900">{teamId}</span>
       </nav>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                <GraduationCap className="h-4 w-4 mr-2" />Batch
-              </label>
-              <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">All</option>
-                <option value="2023-2027">2023-2027</option>
-                <option value="2024-2028">2024-2028</option>
-                <option value="2025-2029">2025-2029</option>
-              </select>
-            </div>
-          </div>
-        </CardContent>
+      <Card className="p-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center"><GraduationCap className="h-4 w-4 mr-2" />Batch</label>
+        <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-xs">
+          <option value="">All</option>
+          <option value="2023-2027">2023-2027</option>
+          <option value="2024-2028">2024-2028</option>
+          <option value="2025-2029">2025-2029</option>
+        </select>
       </Card>
 
       <MetricCards stats={stats} />
