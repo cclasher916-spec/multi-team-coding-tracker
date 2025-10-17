@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// Removing TeamComparison typed import; use inline type instead to fix TS2305
 
 interface TeamComparison {
   teamId?: string;
@@ -15,8 +14,7 @@ interface TeamComparison {
   teamLeadScore?: number;
 }
 
-import { TrendingUp, Users, Trophy } from 'lucide-react';
-import { cn } from '../../utils/cn';
+import { TrendingUp, Users, Trophy, Crown } from 'lucide-react';
 
 interface TeamComparisonTableProps {
   data: TeamComparison[];
@@ -38,17 +36,12 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
   const sortedData = [...data].sort((a, b) => {
     const aValue = a[sortField] as any;
     const bValue = b[sortField] as any;
-    
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     }
-    
     if (typeof aValue === 'number' && typeof bValue === 'number') {
       return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
     }
-    
     return 0;
   });
 
@@ -61,11 +54,7 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
   };
 
   if (!data.length) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        No team comparison data available
-      </div>
-    );
+    return <div className="text-center py-8 text-gray-500">No team comparison data available</div>;
   }
 
   const maxTotal = Math.max(...data.map(d => d.totalSolved));
@@ -83,7 +72,6 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
             </div>
           </div>
         </div>
-        
         <div className="bg-green-50 rounded-lg p-4">
           <div className="flex items-center">
             <Trophy className="h-6 w-6 text-green-600 mr-2" />
@@ -94,15 +82,12 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
             </div>
           </div>
         </div>
-        
         <div className="bg-purple-50 rounded-lg p-4">
           <div className="flex items-center">
             <TrendingUp className="h-6 w-6 text-purple-600 mr-2" />
             <div>
               <p className="text-sm text-purple-600 font-medium">Avg Performance</p>
-              <p className="text-2xl font-bold text-purple-900">
-                {Math.round(data.reduce((sum, team) => sum + team.avgPerMember, 0) / data.length)}
-              </p>
+              <p className="text-2xl font-bold text-purple-900">{Math.round(data.reduce((s, t) => s + t.avgPerMember, 0) / data.length)}</p>
             </div>
           </div>
         </div>
@@ -128,16 +113,14 @@ const TeamComparisonTable: React.FC<TeamComparisonTableProps> = ({ data }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.members}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.totalSolved, maxTotal)}`}>
-                    {team.totalSolved.toLocaleString()}
-                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.totalSolved, maxTotal)}`}>{team.totalSolved.toLocaleString()}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.avgPerMember, maxAvg)}`}>
-                    {team.avgPerMember}
-                  </span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(team.avgPerMember, maxAvg)}`}>{team.avgPerMember}</span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{team.teamLeadName || '—'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex items-center gap-1">
+                  {team.teamLeadName ? (<><Crown className="h-4 w-4 text-yellow-600" />{team.teamLeadName}</>) : '—'}
+                </td>
               </tr>
             ))}
           </tbody>
