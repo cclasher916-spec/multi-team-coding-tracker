@@ -21,5 +21,59 @@ export interface DailyTotal {
   totalDailyIncrease: number;
   assignedTeamLead?: string;
   isTeamLead?: boolean;
-  assignedBatch?: string; // New: '2023-2027' | '2024-2028' | '2025-2029'
+  assignedBatch?: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description: string;
+  sectionId: string;
+  deptId: string;
+  baseTeamName?: string;
+  teamLeadName?: string;
+  teamLeadEmail?: string;
+}
+
+export interface Section {
+  id: string;
+  name: string;
+  deptId: string;
+  teams: Record<string, Team>;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  sections: Record<string, Section>;
+}
+
+export interface Hierarchy {
+  [deptId: string]: Department;
+}
+
+export interface TeamStats {
+  totalMembers: number;
+  totalProblems: number;
+  avgPerMember: number;
+  topPerformer: string;
+  topPerformerScore: number;
+  teamLeadName?: string;
+  teamLeadScore?: number;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  memberId: string;
+  memberName: string;
+  teamId: string;
+  sectionId: string;
+  deptId: string;
+  totalSolved: number;
+  leetcodeTotal: number;
+  skillrackTotal: number;
+  codechefTotal: number;
+  hackerrankTotal: number;
+  isTeamLead?: boolean;
+  assignedTeamLead?: string;
 }

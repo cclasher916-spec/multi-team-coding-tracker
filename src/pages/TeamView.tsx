@@ -7,6 +7,7 @@ import { processDataFrame, getTeamStats, getLatestByMember } from '../utils/data
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MemberGrid from '../components/MemberGrid';
+import MetricCards from '../components/Metrics/MetricCards';
 import { Users, ChevronRight, GraduationCap } from 'lucide-react';
 
 const TeamView: React.FC = () => {
@@ -53,7 +54,7 @@ const TeamView: React.FC = () => {
   const teamId = parts[4] || '';
 
   // Batch filter
-  const filtered = selectedBatch ? data.filter(d => (d as any).batch === selectedBatch || (d as any).assignedBatch === selectedBatch) : data;
+  const filtered = selectedBatch ? data.filter(d => d.assignedBatch === selectedBatch) : data;
 
   const stats = getTeamStats(filtered);
 
@@ -88,18 +89,7 @@ const TeamView: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="p-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">👥 {teamId}</h1>
-            <p className="text-gray-600 mb-4">Team Performance Dashboard</p>
-          </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold text-gray-900">{stats.totalProblems.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Total Problems Solved</div>
-          </div>
-        </div>
-      </Card>
+      <MetricCards stats={stats} />
 
       <MemberGrid data={filtered} showTeamInfo={false} title={`${teamId} Members ${selectedBatch ? '• ' + selectedBatch : ''}`} />
     </div>
