@@ -64,13 +64,9 @@ const TeamView: React.FC = () => {
   }
 
   const parts = window.location.pathname.split('/');
-  const deptId = parts[2] || '';
-  const sectionId = parts[3] || '';
   const teamId = parts[4] || '';
 
   const stats = getTeamStats(data);
-  const latest = getLatestByMember(data);
-  const teamLead = latest.find(m => m.isTeamLead);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -82,17 +78,15 @@ const TeamView: React.FC = () => {
         <span className="font-medium text-gray-900">{teamId}</span>
       </nav>
 
-      <Card>
-        <div className="p-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">👥 {teamId}</h1>
-              <p className="text-gray-600 mb-4">Team Performance Dashboard</p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-gray-900">{stats.totalProblems.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">Total Problems Solved</div>
-            </div>
+      <Card className="p-8">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">👥 {teamId}</h1>
+            <p className="text-gray-600 mb-4">Team Performance Dashboard</p>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-gray-900">{stats.totalProblems.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Total Problems Solved</div>
           </div>
         </div>
       </Card>

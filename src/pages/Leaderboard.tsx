@@ -8,7 +8,7 @@ import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import LeaderboardTable from '../components/Tables/LeaderboardTable';
 import HierarchySelector from '../components/Navigation/HierarchySelector';
-import { Trophy, Medal, Award, Crown, ChevronRight, Users, Target, Filter } from 'lucide-react';
+import { Trophy, Medal, Award, Crown, ChevronRight, Users, Target } from 'lucide-react';
 
 const Leaderboard: React.FC = () => {
   const { db, isInitialized } = useFirebase();
@@ -92,12 +92,7 @@ const Leaderboard: React.FC = () => {
   }
 
   let leaderboard = createLeaderboard(data);
-  
-  // Filter by team leaders if requested
-  if (showOnlyLeaders) {
-    leaderboard = leaderboard.filter(entry => entry.isTeamLead);
-  }
-  
+  if (showOnlyLeaders) leaderboard = leaderboard.filter(e => e.isTeamLead);
   const topPerformers = leaderboard.slice(0, 3);
 
   const getLevelTitle = () => {
@@ -122,9 +117,7 @@ const Leaderboard: React.FC = () => {
       </nav>
 
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-        <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-          🏆 Leaderboard
-        </h1>
+        <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">🏆 Leaderboard</h1>
         <p className="text-gray-600">Celebrating excellence in coding across all levels</p>
       </div>
 
@@ -144,7 +137,7 @@ const Leaderboard: React.FC = () => {
               <div className="mt-4">
                 <label className="flex items-center">
                   <input type="checkbox" checked={showOnlyLeaders} onChange={(e) => setShowOnlyLeaders(e.target.checked)} className="mr-2" />
-                  <span className="text-sm text-gray-700 flex items-center"><Crown className="h-4 w-4 mr-1" />Show Team Leaders Only</span>
+                  <span className="text-sm text-gray-700 flex items-center">Show Team Leaders Only</span>
                 </label>
               </div>
             </div>
@@ -168,23 +161,18 @@ const Leaderboard: React.FC = () => {
           <CardContent>
             <div className="flex justify-center items-end space-x-8">
               <div className="text-center">
-                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-3 mx-auto ${
-                  topPerformers[1].isTeamLead ? 'bg-gradient-to-r from-yellow-100 to-yellow-200' : 'bg-gray-100'
-                }`}>
-                  {topPerformers[1].isTeamLead ? <Crown className="h-12 w-12 text-yellow-600" /> : <Medal className="h-12 w-12 text-gray-400" />}
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-3 mx-auto">
+                  <Medal className="h-12 w-12 text-gray-400" />
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4 min-h-[120px] w-48">
                   <div className="text-2xl font-bold text-gray-600 mb-1">#2</div>
                   <div className="font-semibold text-gray-900">{topPerformers[1].memberName}</div>
-                  {topPerformers[1].isTeamLead && <div className="text-xs text-yellow-600 font-medium">👑 Team Lead</div>}
                   {viewLevel !== 'team' && <div className="text-xs text-gray-500">{topPerformers[1].teamId}</div>}
                   <div className="text-lg font-bold text-gray-700 mt-2">{topPerformers[1].totalSolved.toLocaleString()}</div>
                 </div>
               </div>
               <div className="text-center">
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center mb-3 mx-auto relative ${
-                  topPerformers[0].isTeamLead ? 'bg-gradient-to-r from-yellow-200 to-yellow-300' : 'bg-yellow-100'
-                }`}>
+                <div className="w-32 h-32 bg-yellow-100 rounded-full flex items-center justify-center mb-3 mx-auto relative">
                   <Crown className="h-16 w-16 text-yellow-500" />
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">👑</span>
@@ -193,22 +181,18 @@ const Leaderboard: React.FC = () => {
                 <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6 min-h-[140px] w-56">
                   <div className="text-3xl font-bold text-yellow-600 mb-1">#1</div>
                   <div className="font-bold text-gray-900 text-lg">{topPerformers[0].memberName}</div>
-                  {topPerformers[0].isTeamLead && <div className="text-sm text-yellow-700 font-medium">👑 Team Lead</div>}
                   {viewLevel !== 'team' && <div className="text-sm text-gray-600">{topPerformers[0].teamId}</div>}
                   <div className="text-2xl font-bold text-yellow-600 mt-3">{topPerformers[0].totalSolved.toLocaleString()}</div>
                   <div className="text-xs text-gray-500 mt-1">problems solved</div>
                 </div>
               </div>
               <div className="text-center">
-                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-3 mx-auto ${
-                  topPerformers[2].isTeamLead ? 'bg-gradient-to-r from-yellow-100 to-amber-100' : 'bg-amber-100'
-                }`}>
-                  {topPerformers[2].isTeamLead ? <Crown className="h-12 w-12 text-amber-600" /> : <Award className="h-12 w-12 text-amber-600" />}
+                <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mb-3 mx-auto">
+                  <Award className="h-12 w-12 text-amber-600" />
                 </div>
                 <div className="bg-amber-50 rounded-lg p-4 min-h-[120px] w-48">
                   <div className="text-2xl font-bold text-amber-600 mb-1">#3</div>
                   <div className="font-semibold text-gray-900">{topPerformers[2].memberName}</div>
-                  {topPerformers[2].isTeamLead && <div className="text-xs text-amber-600 font-medium">👑 Team Lead</div>}
                   {viewLevel !== 'team' && <div className="text-xs text-gray-500">{topPerformers[2].teamId}</div>}
                   <div className="text-lg font-bold text-amber-700 mt-2">{topPerformers[2].totalSolved.toLocaleString()}</div>
                 </div>
@@ -241,8 +225,8 @@ const Leaderboard: React.FC = () => {
           <div className="flex items-center p-6">
             <div className="p-3 rounded-lg bg-purple-100 mr-4"><Crown className="h-6 w-6 text-purple-600" /></div>
             <div>
-              <p className="text-sm font-medium text-gray-600">{showOnlyLeaders ? 'Team Leaders' : 'Team Leaders'}</p>
-              <p className="text-2xl font-bold text-gray-900">{showOnlyLeaders ? leaderboard.length : leaderboard.filter(e => e.isTeamLead).length}</p>
+              <p className="text-sm font-medium text-gray-600">Team Leaders</p>
+              <p className="text-2xl font-bold text-gray-900">{leaderboard.filter(e => e.isTeamLead).length}</p>
             </div>
           </div>
         </Card>

@@ -3,13 +3,11 @@ import { Link } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { FirebaseService } from '../services/firebaseService';
 import { DailyTotal } from '../types';
-import { processDataFrame, getLatestByMember } from '../utils/dataProcessing';
+import { processDataFrame } from '../utils/dataProcessing';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MemberGrid from '../components/MemberGrid';
 import { ChevronRight } from 'lucide-react';
-
-// Remove ViewLevel import usage; not needed
 
 const Dashboard: React.FC = () => {
   const { db, isInitialized } = useFirebase();
@@ -45,8 +43,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const latest = getLatestByMember(data);
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <nav className="flex items-center space-x-2 text-sm text-gray-600">
@@ -55,11 +51,9 @@ const Dashboard: React.FC = () => {
         <Link to="/leaderboard" className="hover:text-gray-900">Leaderboard</Link>
       </nav>
 
-      <Card>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold">Welcome</h1>
-          <p className="text-gray-600">Here is the latest snapshot across all teams.</p>
-        </div>
+      <Card className="p-6">
+        <h1 className="text-2xl font-bold">Welcome</h1>
+        <p className="text-gray-600">Here is the latest snapshot across all teams.</p>
       </Card>
 
       <MemberGrid data={data} title="Top Members" />

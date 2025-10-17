@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { FirebaseService } from '../services/firebaseService';
-import { DailyTotal, Hierarchy } from '../types';
+import { DailyTotal } from '../types';
 import { processDataFrame, createTeamComparison } from '../utils/dataProcessing';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
