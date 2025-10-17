@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { FirebaseService } from '../services/firebaseService';
 import { DailyTotal } from '../types';
-import { processDataFrame, getTeamStats, getLatestByMember } from '../utils/dataProcessing';
+import { processDataFrame, getTeamStats } from '../utils/dataProcessing';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import MemberGrid from '../components/MemberGrid';
