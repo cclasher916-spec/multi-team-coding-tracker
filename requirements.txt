@@ -1,0 +1,8 @@
+gspread
+oauth2client
+pandas
+requests
+beautifulsoup4
+google-generativeai
+firebase-admin
+python-dotenv

@@ -1,0 +1,12 @@
+# Ensure Python can import from repo root and scripts package
+import os
+import sys
+# add repo root to path for GitHub Actions
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+# Fix import path to local helper
+from scripts.read_google_sheet import read_google_sheet  # noqa: E402
+
+# rest of the original file remains as-is after this import fix

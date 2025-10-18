@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests beautifulsoup4 google-generativeai firebase-admin python-dotenv; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests beautifulsoup4 google-generativeai firebase-admin python-dotenv gspread oauth2client pandas; fi
 
       - name: Write Firebase credentials file
         env:
@@ -30,6 +30,13 @@ jobs:
         run: |
           echo "$FIREBASE_CREDENTIALS_JSON" > service-account.json
           echo "FIREBASE_CREDENTIALS_JSON written to service-account.json"
+
+      - name: Write Google Sheets credentials file
+        env:
+          GOOGLE_SHEETS_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}
+        run: |
+          echo "$GOOGLE_SHEETS_CREDENTIALS_JSON" > credentials.json
+          echo "Google Sheets creds written to credentials.json"
 
       - name: Run scraper
         env:
@@ -39,4 +46,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FIREBASE_CREDENTIALS_PATH: service-account.json
         run: |
-          python scripts/enhanced_scraper_v2.py
+          python - <<'PY'
+          import os
+          import sys
+          # ensure repo root in path
+          sys.path.insert(0, os.getcwd())
+          # prefer scripts/ import style
+          try:
+              from scripts.enhanced_scraper_v2 import scrape_all_teams
+          except Exception as e:
+              print('Import fallback to run file directly:', e)
+              os.system('python scripts/enhanced_scraper_v2.py')
+          else:
+              scrape_all_teams()
+          PY
