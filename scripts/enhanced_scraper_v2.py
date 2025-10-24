@@ -531,9 +531,9 @@ def scrape_all_teams():
                         'scraped_at': datetime.now()
                     }
                     member_doc.reference.collection('daily_totals').document(today).set(daily_data)
-                    if email and from_email and app_password:
-                        subject = f"🚀 Your Daily Coding Report - {datetime.now().strftime('%b %d')}"
-                        send_email_summary(email, subject, "", from_email, app_password, name, daily_data)
+                    # if email and from_email and app_password:
+                    #     subject = f"🚀 Your Daily Coding Report - {datetime.now().strftime('%b %d')}"
+                    #     send_email_summary(email, subject, "", from_email, app_password, name, daily_data)
                     total_members_scraped += 1
                     print(f"         ✅ Saved to Firebase")
     print("\n" + "="*60)
