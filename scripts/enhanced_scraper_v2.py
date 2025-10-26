@@ -530,7 +530,7 @@ def scrape_all_teams():
                         'github_daily_increase': gh_diff,
                         'scraped_at': datetime.now()
                     }
-                    member_doc.reference.collection('daily_totals').document(today).set(daily_data)
+                    #member_doc.reference.collection('daily_totals').document(today).set(daily_data)
                     # if email and from_email and app_password:
                     #     subject = f"🚀 Your Daily Coding Report - {datetime.now().strftime('%b %d')}"
                     #     send_email_summary(email, subject, "", from_email, app_password, name, daily_data)
