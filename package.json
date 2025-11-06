@@ -1,4 +1,12 @@
 {
+  "name": "multi-team-coding-tracker",
+  "version": "1.0.0",
+  "description": "Multi-team coding activity and leaderboard webapp.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "react-window": "^1.8.8"
   }
