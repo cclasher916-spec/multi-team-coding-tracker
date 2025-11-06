@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FixedSizeList as List } from 'react-window';
 import { DailyTotal } from '../types';
 import { getLatestByMember } from '../utils/dataProcessing';
 import MemberCard from './MemberCard';
@@ -9,9 +10,10 @@ interface MemberGridProps {
   data: DailyTotal[];
   showTeamInfo?: boolean;
   title?: string;
+  pageSize?: number;
 }
 
-const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, title = 'Members' }) => {
+const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, title = 'Members', pageSize = 100 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'performance'>('performance');
 
@@ -20,6 +22,11 @@ const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, titl
   const filteredMembers = latestData
     .filter(m => m.memberName.toLowerCase().includes(searchTerm.toLowerCase()) || m.teamId.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => sortBy === 'name' ? a.memberName.localeCompare(b.memberName) : b.totalSolved - a.totalSolved);
+
+  // Virtualization: only render visible member cards (single column for mobile)
+  // Estimate row height (may need tuning if cards are large/complex)
+  const rowHeight = 124; // px
+  const listHeight = Math.min(filteredMembers.length * rowHeight, 600); // cap for large lists
 
   return (
     <Card>
@@ -44,13 +51,19 @@ const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, titl
             <input type="text" placeholder="Search members or teams..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           </div>
         </div>
-
         {filteredMembers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredMembers.map((member, index) => (
-              <MemberCard key={`${member.memberId}-${member.date}`} member={member} rank={sortBy === 'performance' ? index + 1 : undefined} showTeamInfo={showTeamInfo} />
-            ))}
-          </div>
+          <List
+            height={listHeight}
+            itemCount={filteredMembers.length}
+            itemSize={rowHeight}
+            width={"100%"}
+          >
+            {({ index, style }) => (
+              <div style={style}>
+                <MemberCard key={`${filteredMembers[index].memberId}-${filteredMembers[index].date}`} member={filteredMembers[index]} rank={sortBy === 'performance' ? index + 1 : undefined} showTeamInfo={showTeamInfo} />
+              </div>
+            )}
+          </List>
         ) : (
           <div className="text-center py-8 text-gray-500">
             <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
