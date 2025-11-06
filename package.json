@@ -8,6 +8,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "react-window": "^1.8.8"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0"
   }
 }
