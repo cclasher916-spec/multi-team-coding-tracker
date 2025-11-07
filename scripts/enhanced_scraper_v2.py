@@ -19,7 +19,7 @@ from scripts.read_google_sheet import read_google_sheet
 # ===================== ENV & SECRETS =====================
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KE")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GMAIL_FROM_EMAIL = os.getenv("GMAIL_FROM_EMAIL")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
