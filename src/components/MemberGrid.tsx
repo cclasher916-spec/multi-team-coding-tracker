@@ -10,10 +10,9 @@ interface MemberGridProps {
   data: DailyTotal[];
   showTeamInfo?: boolean;
   title?: string;
-  pageSize?: number;
 }
 
-const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, title = 'Members', pageSize = 100 }) => {
+const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, title = 'Members' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'performance'>('performance');
 
@@ -58,7 +57,7 @@ const MemberGrid: React.FC<MemberGridProps> = ({ data, showTeamInfo = true, titl
             itemSize={rowHeight}
             width={"100%"}
           >
-            {({ index, style }) => (
+            {({ index, style }: { index: number; style: React.CSSProperties }) => (
               <div style={style}>
                 <MemberCard key={`${filteredMembers[index].memberId}-${filteredMembers[index].date}`} member={filteredMembers[index]} rank={sortBy === 'performance' ? index + 1 : undefined} showTeamInfo={showTeamInfo} />
               </div>
